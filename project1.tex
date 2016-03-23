@@ -69,4 +69,19 @@ From the major difference discussed above, another two difference can be derived
   stream. Whereas in SQL, none of the above is easy or possible to
   implement.
 \end{itemize}
+
+\subsubsection{Apache Hive}
+
+Despite the simplicity of Apache Pig, programmers would still prefer something more akin to SQL for querying a database (not necessarily a RDBMS). There are several reasons to that:
+
+\begin{itemize}
+\item There is much less to learn if one can use SQL-like language to operate on the database.
+\item Programmers can query a new database with the same old code. For example, people can use the same piece of code that does something through the JDBC interface with a database that's based on Apache Hadoop and enjoy the high performance brought by it, and immediately switch back to the original database for some other purposes.
+\item Sometimes it is just easier to express the query using declarative code than procedural code. The relational model and constructs of SQL support data warehousing the best. Users often write ad-hoc queries in SQL more quickly than other kind of query languages (basically due to its declaractive nature, which is elaborated before).[\url{https://developer.yahoo.com/blogs/hadoop/pig-hive-yahoo-464.html}]
+\end{itemize}
+
+Following these requirements from practice, Apache Hive was invented. According to Hive's homepage, Apache Hive is a data warehouse software system that aims at querying and managing large datasets across distributed storage with a SQL-like (although not compatible with the full SQL-92 standard) language called HiveQL. At a subsequent version, HiveQL was made compliant with full ACID functionality and provided indexes for faster queries.
+
+The internal compiler will compile the HiveQL commands into MapReduce, Apache Tez or Spark jobs and submit them to the underlying Apache Hadoop instance.[\url{https://en.wikipedia.org/wiki/Apache_Hive}] That is to say, Apache Hive uses HDFS as its storage, which is proven to be inefficient for write operations. It also has only limited supports on transactions. But none of these reasons stops Apache Hive from being one of the best data warehouse infrastructures.
+
 \end{document}
