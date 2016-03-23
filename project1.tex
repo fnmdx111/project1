@@ -1,0 +1,72 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{float}
+
+
+\title{W4112 Project 1}
+
+\begin{document}
+\section{Big Data Analysis and Relational Database Management Systems}
+
+In the following section, we would like to look into big data analysis frameworks and how they impact on database management systems.
+
+Because of the burst of technology development, people are more connected to the Internet than ever before, thus we're having PB's of data generated everyday. For example, people are doing more and more online shopping, which produces a whole lot more information for analysts to dig into more deeply. Traditional techniques seem inadequate for data sets of this kind of scale. 
+
+The problem of this extends naturally to database management systems: people are nowadays creating, maintaining and querying bigger and bigger tables with more and more rows and columns. It also impairs the usability of traditional database management systems that relational database systems cannot categorize unstructured data like pictures, audios and videos, whereas they exist ubiquitously in today's data sets. [http://marketrealist.com/2014/07/traditional-database-systems-fail-support-big-data/] It seems obvious that we need new techniques for RDMSes, rather than just tolerate with the old ones, to cope with big data.
+
+\subsection{MapReduce-based Frameworks}
+
+It has become a major concern on how to process and analyze very large data sets, and people realized that there is a (or are many) common pattern(s) about how we can process very large data sets. One among many successful attempts is called \textbf{MapReduce}.
+
+MapReduce is the solution given by Google to process large (over $1TB$) data sets parallelly. It concerns mainly two concepts: \textit{Map} and \textit{Reduce}. A Mapper (or mapping function) is an operation on a list, where each element of the list is applied to the same function (i.e. the mapping function). After this mapping procedure, a Reducer is used to collect all the results from the mapper and reduce all the results into a single result. In functional programming, if the mapping function is free of side-effects, the mapping procedure is spontaneously parallelable because each sub-procedure can be seen as isolated from each other, so that it suffices that the order of these sub-procedures doesn't matter. (The reduce procedure is, however, less parallelable in general.) By utilizing this nature and adding mechanisms for fault-tolerance and redundancy, MapReduce framework is able to make good use of distributed computing resources by distributing map tasks to multiple instances.[\url{https://en.wikipedia.org/wiki/MapReduce}] From the perspective of programmers, the MapReduce model requires programmers to have little or no prior knowledge on distributed algorithms to create an application that could run in parallel across multiple nodes in the cluster.[\url{http://www.eng.auburn.edu/~xqin/pubs/hcw10.pdf}]
+
+It may be a good fit between the MapReduce model and relational database management systems. When querying a very large table, the system could use the MapReduce model to distribute the query, i.e. let each instance do the query on a subset of the whole table, and finally merge the sub-results. This would, of course, require the data to be parallel accessible.
+
+\subsubsection{Apache Hadoop}
+
+The MapReduce paper has inspired lots of open-source implementations, of which the most famous one is Apache Hadoop. So it is beneficial that we look at Hadoop in detail. Hadoop consists of two core parts, namely the storage part and processing part.
+
+\begin{description}
+\item[HDFS] The storage part is called Hadoop Distributed Filesystem, or HDFS. It is a distributed, scalable and portable filesystem specifically designed for the Hadoop framework, but also is also applicable to other uses, of which include the HBase database, the Apache Mahout machine learning system and the Apache Hive Data Warehouse sytem.[\url{https://en.wikipedia.org/wiki/Apache_Hadoop#HDFS}]
+
+A typical instance of HDFS consists of one NameNode which keeps the directory tree of all the files in the filesystem and several DataNode that actually holds all the data. When a client wants to do certain actions to the HDFS instance, it is actually talking to the NameNode, for example, the NameNode responds with a list of relevant DataNode servers where the data resides to the client via TCP/IP sockets, if the client wish to read a certain file.[\url{https://wiki.apache.org/hadoop/NameNode}] Replication is done across the DataNodes to support failure-tolerance.
+
+A major advantage with HDFS is that HDFS is aware of data location and is willing to use such knowledge to reduce the amount of traffic that goes through the network and unnecessarily moved data. The job tracker and task tracker can then use this information to better schedule how the data will be accessed. This is especially important since it is critical to cut down the cost of communication for a good MapReduce algorithm.[Designing good MapReduce algorithms] It is, however, important to point out that HDFS is good for files that rarely got updated, rather than system requiring frequent concurrent. write-operations.[Distributed Storage: Concepts, Algorithms, and Implementations]
+
+\item[MapReduce Engine] The processing part that consists of one JobTracker and multiple TaskTrackers, is built on top of the storage part as stated above. User submits MapReduce jobs to JobTracker, where JobTracker distributes the jobs to the TaskTrackers that are alive and have sufficient slot to receive jobs. In a data-aware filesystem (for example, HDFS), the JobTracker is able to distribute the job to the node as close as possible to the node which actually holds the data.[\url{https://en.wikipedia.org/wiki/Apache_Hadoop#JobTracker_and_TaskTracker:_the_MapReduce_engine}]
+
+A TaskTracker can only receive new jobs if it has enough free slots. Active map or reduce task each takes up one free slot. New jobs are allocated to the TaskTracker that is closest to the DataNode with no considerations about the work load of the current node, which could lead to inefficiency of the whole Hadoop system. The JobTracker supports various scheduler algorithms to cope with different kinds of job patterns, for example, the fair scheduler developed by Facebook aims for fast response times for small jobs and QoS for production jobs.
+\end{description}
+
+The importance of the Apache Hadoop framework cannot be addressed enough. It enables data center owners to fully utilize whatever computational power they have to store and process more data than ever before within the same amount of time fault-tolerantly. And since it's an open-source framework, a lot of subsequent works are done, basing on Apache Hadoop. So it's suffice to say that Hadoop has now become the name of an ecosystem, where different projects targeting different tasks are built around Apache Hadoop. To name but a few, Apache Pig, Apache Hive, Apache HBase and so on.
+
+\subsubsection{Apache Pig}
+
+Although we now have an adequate enough framework to run our MapReduce applications, it is hard for programmer to write good MapReduce code. This is because[\url{http://blog.mortardata.com/post/33711299619/8-reasons-you-should-be-using-apache-pig}]
+\begin{itemize}
+\item The MapReduce model is unintuitive for programmers without a functional programming background.
+\item Real-world applications can be too hard to model and manage in plain code.
+\item Boilerplate code is ubiquitously needed to support common operations and custom data types.
+\end{itemize}
+
+That is to say a higher-level abstraction of MapReduce programming is needed. People realized this and created Apache Pig. Apache Pig is an important part of the Hadoop ecosystem. It is a platform for analyzing large data sets built on top of Apache Hadoop. Pig also contains a high-level language called Pig Latin that is expressive when writing data analysis programs and naturally amenable to automatic parallelization.
+
+Programs coded in Pig is quite analogous to SQL at first glance, however, there exists several critical differences.
+
+The major difference is that Pig Latin is procedural, while SQL is declarative. Classic procedural programming language includes C, Go and Fortran, whereas SQL and most functional languages are considered declaractive programming language. The key difference between these two paradigm is that users have to explicitly give a series of procedures for the language to call. The users of declarative languages, however, declare what to do before the language figures out how to do (classic application scenario of query optimizers of SQL). This programming paradigm that Pig Latin utilizes is very easy to use when the users want to do a series of computations with the data, where the output of each computation is the input of the next computation (also called pipeline paradigm[\url{https://en.wikipedia.org/wiki/Pig_(programming_tool)}]).
+
+From the major difference discussed above, another two difference can be derived:
+\begin{itemize}
+\item In Pig, users are forced to program how the system will carry
+  out the query, while in SQL, the query optimization is responsible
+  for that. This difference makes sure that programmers are more
+  flexible in controlling how the data stream flows in the program.
+\item With some effort utilizing the properties of pipelines, Pig is
+  able to store data, execute other code during a pipeline and run
+  different pipeline code on different parts of the data
+  stream. Whereas in SQL, none of the above is easy or possible to
+  implement.
+\end{itemize}
+\end{document}
